@@ -1,0 +1,25 @@
+---
+
+services:
+  myapp:
+    image: alexkkk21/nextjsapp4
+    container_name: myapp
+    ports:
+      - "9999:8889"
+      - "8081:8081"
+    restart: always
+    networks:
+      - app-network
+    volumes:
+      - ./logs:/var/log/nginx
+  # telegraf:
+  #   image: docker.io/telegraf:latest
+  #   container_name: telegraf
+  #   environment:
+  #    - MQTT_USERNAME=${MQTT_USERNAME}
+  #    - MQTT_PASSWORD=${MQTT_PASSWORD}
+  #   volumes:
+  #     - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+networks:
+  app-network:
+    driver: bridge

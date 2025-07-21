@@ -50,6 +50,32 @@ services:
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
 
+  myapp:
+    image: alexkkk21/nextjsapp4:latest
+    container_name: myapp
+    ports:
+      - "9999:8889"
+    restart: always
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-exporter
+    ports:
+      - "9113:9113"
+    command:
+      - -nginx.scrape-uri=http://46.235.145.55:9999/nginx_status
+    depends_on:
+      - myapp
+  
+  # telegraf:
+  #   image: docker.io/telegraf:latest
+  #   container_name: telegraf
+  #   environment:
+  #    - MQTT_USERNAME=${MQTT_USERNAME}
+  #    - MQTT_PASSWORD=${MQTT_PASSWORD}
+  #   volumes:
+  #     - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
 volumes:
   grafanadata:
   prometheusdata:

@@ -1,0 +1,9 @@
+---
+
+services:
+  mymulti5:
+    image: alexkkk21/nextjsapp4
+    ports:
+      - "9999:8889"
+      - "8081:8081"
+    restart: always

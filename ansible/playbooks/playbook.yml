@@ -1,0 +1,38 @@
+---
+- name: Ensure SSH access is enabled on Ubuntu
+  hosts: localhost
+  become: yes
+  roles:
+    - geerlingguy.docker
+  tasks:
+    - name: Install OpenSSH server
+      apt:
+        name: openssh-server
+        state: present
+        update_cache: yes
+
+    - name: Ensure SSH service is enabled and running
+      service:
+        name: ssh
+        state: started
+        enabled: yes
+
+    - name: Ensure SSH root login is permitted (если нужно разрешить root)
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin yes'
+        state: present
+        backup: yes
+      notify: Restart SSH
+
+    - name: Start services using Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: .
+        files: docker-compose.yml
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted
