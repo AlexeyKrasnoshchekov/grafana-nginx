@@ -52,7 +52,7 @@ services:
     #   driver: json-file
     #   options:
     #     tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
-
+#
   myapp:
     image: alexkkk21/nextjsapp4:latest
     container_name: myapp
