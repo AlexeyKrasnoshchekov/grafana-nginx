@@ -1,6 +1,6 @@
 ---
 - name: Ensure SSH access is enabled on Ubuntu
-  hosts: localhost
+  hosts: client2
   become: yes
   roles:
     - geerlingguy.docker
@@ -20,16 +20,25 @@
     - name: Ensure SSH root login is permitted (если нужно разрешить root)
       lineinfile:
         path: /etc/ssh/sshd_config
-        regexp: '^#?PermitRootLogin'
-        line: 'PermitRootLogin yes'
+        regexp: "^#?PermitRootLogin"
+        line: "PermitRootLogin yes"
         state: present
         backup: yes
       notify: Restart SSH
 
-    - name: Start services using Docker Compose
-      community.docker.docker_compose_v2:
-        project_src: .
-        files: docker-compose.yml
+    - name: Run Docker container
+      community.docker.docker_container:
+        name: my_app # Имя для вашего контейнера
+        image: alexkkk21/nextjsapp4 # Имя образа с тегом
+        state: started # Указывает, что контейнер должен быть запущен
+        restart_policy: always # Политика перезапуска контейнера
+        ports: # Маппинг портов (хост:контейнер)
+          - "9999:8889"
+
+    # - name: Start services using Docker Compose
+    #   community.docker.docker_compose_v2:
+    #     project_src: .
+    #     files: docker-compose.yml
 
   handlers:
     - name: Restart SSH
