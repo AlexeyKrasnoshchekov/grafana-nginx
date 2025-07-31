@@ -1,5 +1,8 @@
 services:
   promtail:
+    depends_on:
+      - myapp
+      - loki
     image: grafana/promtail:latest
     container_name: promtail
     ports:
@@ -40,15 +43,15 @@ services:
       - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - grafanadata:/var/lib/grafana
 
-  backend:
-    build: ./backend
-    container_name: backend
-    ports:
-      - "8080:8080"
-    logging:
-      driver: json-file
-      options:
-        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+  # backend:
+  #   build: ./backend
+  #   container_name: backend
+  #   ports:
+  #     - "8080:8080"
+    # logging:
+    #   driver: json-file
+    #   options:
+    #     tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
 
   myapp:
     image: alexkkk21/nextjsapp4:latest
@@ -56,6 +59,12 @@ services:
     ports:
       - "9999:8889"
     restart: always
+    logging:
+      driver: json-file
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+        max-size: "10m"
+        max-file: "3"
 
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
