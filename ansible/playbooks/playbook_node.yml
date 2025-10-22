@@ -1,0 +1,69 @@
+---
+- name: Install node and npm
+  hosts: client2
+  tasks:
+    - name: Update apt repo and cache
+      ansible.builtin.apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+    - name: Install nodejs and npm
+      ansible.builtin.apt:
+        pkg:
+          - nodejs
+          - npm
+- name: Create new Linux group
+  hosts: client2
+  become: true
+  become_user: alex
+  tasks:
+    - name: Ensure 'devops' group exists
+      ansible.builtin.group:
+        name: devops
+        state: present
+- name: Create new linux user for node app
+  hosts: client2
+  vars_files:
+    - project-vars
+  tasks:
+    - name: Create linux user
+      ansible.builtin.user:
+        name: "{{linux_name}}"
+        comment: Node User
+        group: devops
+
+- name: Deploy nodejs app
+  hosts: client2
+  become: true
+  become_user: alex
+  vars_files:
+    - project-vars
+  tasks:
+    - name: Ensure /opt/my_app_data directory exists
+      ansible.builtin.file:
+        path: "{{user_home_dir}}/react-nodejs-example"
+        state: directory
+        owner: alex # Optional: Set the owner of the directory
+        mode: "0755" # Optional: Set the permissions of the directory
+        recurse: yes # Optional: Create parent directories if they don't exist
+
+    - name: Copy nodejs file
+      copy:
+        src: /home/alex/react-nodejs-example/my-app/my-app-0.1.0.tgz
+        dest: "{{user_home_dir}}/react-nodejs-example"
+
+    - name: Unpack the nodejs file
+      ansible.builtin.unarchive:
+        src: "{{user_home_dir}}/react-nodejs-example/my-app-0.1.0.tgz"
+        dest: "{{user_home_dir}}/react-nodejs-example"
+        remote_src: yes
+    - name: Install dependencies
+      community.general.npm:
+        path: "{{user_home_dir}}/react-nodejs-example/package"
+    - name: Start the application
+      ansible.builtin.command:
+        chdir: "{{user_home_dir}}/react-nodejs-example/package"
+        cmd: npm run start
+      async: 1000
+      poll: 0
+    - name: Ensure app is running
+      ansible.builtin.shell: ps aux | grep node
+      register: app_status
+    - ansible.builtin.debug: msg={{app_status.stdout_lines}}

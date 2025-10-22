@@ -1,0 +1,107 @@
+---
+# - name: Ensure SSH access is enabled on Ubuntu
+# hosts: client2
+# become: yes
+#   roles:
+#     - geerlingguy.docker
+#   tasks:
+#     - name: Install OpenSSH server
+#       apt:
+#         name: openssh-server
+#         state: present
+#         update_cache: yes
+
+#     - name: Ensure SSH service is enabled and running
+#       service:
+#         name: ssh
+#         state: started
+#         enabled: yes
+
+#     - name: Ensure SSH root login is permitted (если нужно разрешить root)
+#       lineinfile:
+#         path: /etc/ssh/sshd_config
+#         regexp: "^#?PermitRootLogin"
+#         line: "PermitRootLogin yes"
+#         state: present
+#         backup: yes
+#       notify: Restart SSH
+
+- name: Deploy nginx on Kubernetes
+  hosts: client2
+  become: true
+  tasks:
+    - name: Get Python 3.X version
+      ansible.builtin.command: python3 --version
+      register: pyver
+      changed_when: false
+      failed_when: pyver.rc != 0
+
+    - name: Remove Python 3.X EXTERNALLY-MANAGED file
+      ansible.builtin.file:
+        state: absent
+        path: "/usr/lib/python{{ pyver.stdout.split()[1] | regex_search('([0-9]+\\.[0-9]+)') }}/EXTERNALLY-MANAGED"
+      when: pyver.stdout | regex_search('3\.[0-9]+')
+
+    - name: Ensure kubernetes library is installed
+      pip:
+        name: kubernetes
+      vars:
+        ansible_python_interpreter: /usr/bin/python3.12
+
+    - name: Create a namespace in Kubernetes cluster
+      kubernetes.core.k8s:
+        kubeconfig: "~{{ansible_user}}/.kube/config"
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: ansible-ns
+        state: present
+
+    # - name: Create a Deployment
+    #   k8s:
+    #     kubeconfig: /home/alex/.kube/config
+    #     definition:
+    #       apiVersion: apps/v1
+    #       kind: Deployment
+    #       metadata:
+    #         name: nginx-deployment
+    #         namespace: my-namespace5
+    #       spec:
+    #         replicas: 3
+    #         selector:
+    #           matchLabels:
+    #             app: nginx
+    #         template:
+    #           metadata:
+    #             labels:
+    #               app: nginx
+    #           spec:
+    #             containers:
+    #               - name: nginx
+    #                 image: nginx:latest
+    #                 ports:
+    #                   - containerPort: 8081
+
+    # - name: Expose deployment as a service
+    #   k8s:
+    #     definition:
+    #       apiVersion: v1
+    #       kind: Service
+    #       metadata:
+    #         name: nginx-service
+    #         namespace: my-namespace5
+    #       spec:
+    #         selector:
+    #           app: nginx
+    #         ports:
+    #           - protocol: TCP
+    #             port: 8081
+    #             targetPort: 8081
+    #         type: LoadBalancer
+
+  # handlers:
+  #   - name: Restart SSH
+  #     service:
+  #       name: ssh
+  #       state: restarted
