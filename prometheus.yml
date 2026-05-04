@@ -2,11 +2,6 @@ global:
   scrape_interval: 3s
 
 scrape_configs:
-  - job_name: "litestar"
-    metrics_path: /metrics
-    static_configs:
-      - targets: ["backend:8080"]
-
   - job_name: 'nginx'
     static_configs:
       - targets: ['46.235.145.55:9113']
