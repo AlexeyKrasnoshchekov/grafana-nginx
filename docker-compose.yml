@@ -1,18 +1,18 @@
 services:
-  promtail:
-    depends_on:
-      - myapp
-      - loki
-    image: grafana/promtail:latest
-    container_name: promtail
-    ports:
-      - "9080:9080"
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./promtail-config.yaml:/etc/promtail/config.yml
-    command: -config.file=/etc/promtail/config.yml
-    privileged: true
+  # promtail:
+  #   depends_on:
+  #     - myapp
+  #     - loki
+  #   image: grafana/promtail:latest
+  #   container_name: promtail
+  #   ports:
+  #     - "9080:9080"
+  #   volumes:
+  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./promtail-config.yaml:/etc/promtail/config.yml
+  #   command: -config.file=/etc/promtail/config.yml
+  #   privileged: true
 
   loki:
     image: grafana/loki:latest
@@ -53,28 +53,28 @@ services:
     #   options:
     #     tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
 #
-  myapp:
-    image: alexkkk21/nextjsapp4:latest
-    container_name: myapp
-    ports:
-      - "9999:8889"
-    restart: always
-    logging:
-      driver: json-file
-      options:
-        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
-        max-size: "10m"
-        max-file: "3"
+  # myapp:
+  #   image: alexkkk21/nextjsapp4:latest
+  #   container_name: myapp
+  #   ports:
+  #     - "9999:8889"
+  #   restart: always
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+  #       max-size: "10m"
+  #       max-file: "3"
 
-  nginx-exporter:
-    image: nginx/nginx-prometheus-exporter:latest
-    container_name: nginx-exporter
-    ports:
-      - "9113:9113"
-    command:
-      - -nginx.scrape-uri=http://46.235.145.55:9999/nginx_status
-    depends_on:
-      - myapp
+  # nginx-exporter:
+  #   image: nginx/nginx-prometheus-exporter:latest
+  #   container_name: nginx-exporter
+  #   ports:
+  #     - "9113:9113"
+  #   command:
+  #     - -nginx.scrape-uri=http://10.0.2.155:9999/nginx_status
+  #   depends_on:
+  #     - myapp
   
   # telegraf:
   #   image: docker.io/telegraf:latest
